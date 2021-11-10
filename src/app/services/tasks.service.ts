@@ -1,6 +1,8 @@
+import { getTestBed } from '@angular/core/testing';
 import { Task } from './../model/task';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { Storage } from '@capacitor/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -13,25 +15,21 @@ export class TasksService {
 
   constructor() {
 
-    this.tasks = [
-      {
-        id: 0,
-        title: 'Hacer la colada',
-        description: 'Separar la ropa blanca de la de color'
-      },
-      {
-        id: 1,
-        title: 'Estudiar Acceso a Datos',
-        description: 'Hacer todos los ejercicios'
-      },
-      {
-        id: 2,
-        title: 'Sacar al perro',
-        description: 'Contarle un cuento para que se relaje'
-      }
-    ]
+    ;(async function (_this) {
 
-    this.taskCounter = this.tasks.length
+      localStorage.clear()
+
+      const newTask = {
+        id: 0,
+        title: 'Una tarea',
+        description: 'Algo'
+      }
+
+      await _this.addTaskToStorage(newTask)
+
+      _this.tasks = await _this.getTasksFromStorage()
+
+    })(this);
 
   } // constructor()
 
@@ -61,6 +59,26 @@ export class TasksService {
 
   deleteTask(id: number) {
     this.tasks = this.tasks.filter(task => task.id !== id)
+  }
+
+  async getTasksFromStorage(): Promise<Task[]> {
+    const tasks = await Storage.get({key: 'tasks'})
+    const parsedTasks = JSON.parse(tasks.value)
+
+    if (tasks.value) return parsedTasks
+    return []
+  }
+
+  async addTaskToStorage(task: Task) {
+    let tasks = await this.getTasksFromStorage()
+    tasks.push(task)
+ 
+    const tasksString = JSON.stringify(tasks)
+
+    Storage.set({
+      key: 'tasks',
+      value: tasksString
+    })
   }
 
 }

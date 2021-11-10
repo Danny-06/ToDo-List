@@ -1,0 +1,6 @@
+{
+	"appId": "com.iescampanillas.todolist",
+	"appName": "Todo list with persistence",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}

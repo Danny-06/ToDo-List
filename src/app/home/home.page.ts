@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { TasksService } from '../services/tasks.service';
 
 @Component({
   selector: 'app-home',
@@ -7,6 +9,12 @@ import { Component } from '@angular/core';
 })
 export class HomePage {
 
-  constructor() {}
+  constructor(public tasksService: TasksService, private router: Router) {
+
+  }
+
+  goEditTask(id?: number) {
+    this.router.navigateByUrl(`/edit/${id != null ? id : ''}`)
+  }
 
 }

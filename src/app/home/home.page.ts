@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TasksService } from '../services/tasks.service';
 
@@ -7,14 +7,27 @@ import { TasksService } from '../services/tasks.service';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
-export class HomePage {
 
-  constructor(public tasksService: TasksService, private router: Router) {
+export class HomePage implements OnInit {
 
+  constructor(public tasksService: TasksService, private router: Router) {}
+
+  async ngOnInit() {
+    const ts = this.tasksService
+
+    localStorage.clear()
+
+    ts.taskCounter = await ts.getMaxTaskID() + 1
+
+    await ts.addTaskToStorage({title: 'Una tarea', description: 'Algo'})
+    await ts.addTaskToStorage({title: 'Otra tarea', description: 'Algo más'})
+
+    ts.tasks = await ts.getTasksFromStorage()
   }
 
   goEditTask(id?: number) {
-    this.router.navigateByUrl(`/edit/${id != null ? id : ''}`)
+    const idTask = id ?? ''
+    this.router.navigateByUrl(`/edit/${idTask}`)
   }
 
 }

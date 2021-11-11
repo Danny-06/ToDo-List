@@ -1,4 +1,3 @@
-import { getTestBed } from '@angular/core/testing';
 import { Task } from './../model/task';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
@@ -13,25 +12,7 @@ export class TasksService {
   tasks: Task[] = []
   taskCounter: number = 0
 
-  constructor() {
-
-    ;(async function (_this) {
-
-      localStorage.clear()
-
-      const newTask = {
-        id: 0,
-        title: 'Una tarea',
-        description: 'Algo'
-      }
-
-      await _this.addTaskToStorage(newTask)
-
-      _this.tasks = await _this.getTasksFromStorage()
-
-    })(this);
-
-  } // constructor()
+  constructor() {}
 
   getTask(id: number): Task {
     return this.tasks.filter(task => task.id === id)[0]
@@ -61,24 +42,41 @@ export class TasksService {
     this.tasks = this.tasks.filter(task => task.id !== id)
   }
 
-  async getTasksFromStorage(): Promise<Task[]> {
-    const tasks = await Storage.get({key: 'tasks'})
-    const parsedTasks = JSON.parse(tasks.value)
 
-    if (tasks.value) return parsedTasks
+  // Storage Methods
+
+  async getTaskFromStorage(id: number): Promise<Task> {
+    const tasks = await this.getTasksFromStorage()
+    return tasks.filter(task => task.id === id)[0]
+  }
+
+  async getTasksFromStorage(): Promise<Task[]> {
+    const {value: tasks} = await Storage.get({key: 'tasks'})
+    const parsedTasks = JSON.parse(tasks)
+
+    if (tasks) return parsedTasks
     return []
   }
 
-  async addTaskToStorage(task: Task) {
-    let tasks = await this.getTasksFromStorage()
-    tasks.push(task)
- 
+  async addTaskToStorage(task: Task): Promise<void> {
+    const tasks = await this.getTasksFromStorage()
+    const id = this.taskCounter++
+    tasks.push({id, ...task})
+
     const tasksString = JSON.stringify(tasks)
 
     Storage.set({
       key: 'tasks',
       value: tasksString
     })
+  }
+
+  async getMaxTaskID(): Promise<number>  {
+    const tasks = await this.getTasksFromStorage()
+    const tasksIDs = tasks.map(task => task.id)
+    const id = Math.max(...tasksIDs)
+
+    return id ?? 0
   }
 
 }

@@ -19,10 +19,9 @@ export class EditPage implements OnInit {
     private activatedRoute: ActivatedRoute
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     const taskID = parseInt( this.activatedRoute.snapshot.paramMap.get('id') )
-
-    const currentTask = this.tasksService.getTask(taskID)
+    const currentTask = await this.tasksService.getTaskFromStorage(taskID)
 
     // Si se edita la tarea (si la ID no es NaN)
     // Rellenar los inputs con la información de la tarea

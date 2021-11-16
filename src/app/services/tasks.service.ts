@@ -46,9 +46,9 @@ export class TasksService {
     this.tasks = await this.getTasksFromStorage()
   }
 
-  deleteTask(id: number) {
-    this.tasks = this.tasks.filter(task => task.id !== id)
-    this.deleteTaskFromStore(id)
+  async deleteTask(id: number) {
+    await this.deleteTaskFromStore(id)
+    this.tasks = await this.getTasksFromStorage()
   }
 
 
@@ -72,7 +72,7 @@ export class TasksService {
     const newTasks = tasks.filter(task => task.id !== id)
     const newTasksStringify = JSON.stringify(newTasks)
 
-    Storage.set({
+    return Storage.set({
       key: 'tasks',
       value: newTasksStringify
     })

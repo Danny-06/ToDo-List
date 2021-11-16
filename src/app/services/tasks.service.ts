@@ -26,20 +26,29 @@ export class TasksService {
     return of(this.tasks)
   }
 
-  saveTask(task: Task) {
+  async saveTask(task: Task) {
     // Si la ID es nula, entonces se va a añadir una nueva tarea a la lista
-    if (task.id == null) {
-      const id = this.taskCounter++
-      this.tasks.push({id, ...task})
-    } else {
-      // Si no, se va a editar una tarea ya existente
-      const currentTask = this.getTask(task.id)
-      Object.assign(currentTask, task)
-    }
+    if (task.id == null) return this.addTaskToStorage({...task})
+
+    // Si no, se va a editar una tarea ya existente
+    const tasks = await this.getTasksFromStorage()
+    tasks.forEach(storedTask => {
+      if (storedTask.id === task.id) Object.assign(storedTask, task)
+    })
+
+    const tasksStringify = JSON.stringify(tasks)
+
+    await Storage.set({
+      key: 'tasks',
+      value: tasksStringify
+    })
+
+    this.tasks = await this.getTasksFromStorage()
   }
 
   deleteTask(id: number) {
     this.tasks = this.tasks.filter(task => task.id !== id)
+    this.deleteTaskFromStore(id)
   }
 
 
@@ -58,25 +67,38 @@ export class TasksService {
     return []
   }
 
+  async deleteTaskFromStore(id: number) {
+    const tasks = await this.getTasksFromStorage()
+    const newTasks = tasks.filter(task => task.id !== id)
+    const newTasksStringify = JSON.stringify(newTasks)
+
+    Storage.set({
+      key: 'tasks',
+      value: newTasksStringify
+    })
+  }
+
   async addTaskToStorage(task: Task): Promise<void> {
     const tasks = await this.getTasksFromStorage()
     const id = this.taskCounter++
     tasks.push({id, ...task})
 
-    const tasksString = JSON.stringify(tasks)
+    const tasksStringify = JSON.stringify(tasks)
 
-    Storage.set({
+    await Storage.set({
       key: 'tasks',
-      value: tasksString
+      value: tasksStringify
     })
+
+    this.tasks = await this.getTasksFromStorage()
   }
 
-  async getMaxTaskID(): Promise<number>  {
+  async getMaxTaskID(): Promise<number> {
     const tasks = await this.getTasksFromStorage()
     const tasksIDs = tasks.map(task => task.id)
     const id = Math.max(...tasksIDs)
 
-    return id ?? 0
+    return Number.isFinite(id) ? id : -1
   }
 
 }

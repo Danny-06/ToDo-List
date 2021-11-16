@@ -21,8 +21,6 @@ export class HomePage implements OnInit {
 
     await ts.addTaskToStorage({title: 'Una tarea', description: 'Algo'})
     await ts.addTaskToStorage({title: 'Otra tarea', description: 'Algo más'})
-
-    ts.tasks = await ts.getTasksFromStorage()
   }
 
   goEditTask(id?: number) {
